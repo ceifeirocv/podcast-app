@@ -13,6 +13,7 @@
 ## Existing Repo Baseline
 
 - Current app is a minimal Expo scaffold.
+- `src/` exists but is currently empty; create feature folders on-demand using the architecture conventions below.
 - Entry files:
   - `index.ts`
   - `App.tsx`
@@ -23,6 +24,12 @@
   - `pnpm android`
   - `pnpm ios`
   - `pnpm web`
+
+## Current State And Gaps
+
+- This repository is intentionally at scaffold stage.
+- Clerk, Podcast Index proxy integration, `expo-audio`, and `expo-file-system` usage are expected future feature work, not completed integrations.
+- There is no test/lint pipeline yet; do not assume `test`, `lint`, or CI scripts exist.
 
 ## Build And Validation
 
@@ -49,6 +56,18 @@
 - Use explicit types for API responses and domain models.
 - Validate and normalize remote payloads before UI consumption.
 - Avoid `any`; prefer narrow unions and type guards.
+- Prefer path aliases already configured in `tsconfig.json`:
+  - `@/*` -> `src/*`
+  - `@assets/*` -> `assets/*`
+
+## Environment Variables
+
+- Use `.env.local` for local development values (already gitignored).
+- Required for auth integration:
+  - `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- Required once Podcast Index proxy is added:
+  - Base URL for trusted backend proxy (for example, `EXPO_PUBLIC_API_BASE_URL`).
+- Never store Podcast Index secret in Expo app code or public env vars.
 
 ## Clerk (Expo) Rules
 
@@ -116,3 +135,9 @@
 - Update or add types when API shapes evolve.
 - Include basic failure handling (network error, empty state, unauthorized state, missing file state).
 - Preserve existing project style and keep code readable without over-commenting.
+
+## Installed Agent Skills
+
+- `building-native-ui`: use for Expo Router UI composition, screen patterns, and native-feeling layout decisions.
+- `expo-tailwind-setup`: use only when introducing Tailwind/NativeWind setup.
+- `native-data-fetching`: use for any network request, caching, and error-handling patterns.
