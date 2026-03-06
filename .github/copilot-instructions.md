@@ -3,6 +3,8 @@
 ## Stack And Scope
 
 - This is a React Native app using Expo SDK 55 and TypeScript (`strict: true`).
+- React version is `19.2.4` and React Native version is `0.83.2`.
+- Router: Expo Router with typed routes enabled.
 - Auth provider: Clerk (Expo-native flow).
 - Content provider: Podcast Index API.
 - Core user capabilities:
@@ -13,10 +15,13 @@
 ## Existing Repo Baseline
 
 - Current app is a minimal Expo scaffold.
-- `src/` exists but is currently empty; create feature folders on-demand using the architecture conventions below.
-- Entry files:
-  - `index.ts`
-  - `App.tsx`
+- App entry is Expo Router via `package.json` main = `expo-router/entry`.
+- Routing root is `src/app/`.
+- Current route files:
+  - `src/app/_layout.tsx`
+  - `src/app/index.tsx`
+- Legacy scaffold files `index.ts` and `App.tsx` may exist, but routing/render tree comes from Expo Router.
+- Config file:
   - `app.json`
 - Package manager: `pnpm`.
 - Available scripts:
@@ -28,6 +33,7 @@
 ## Current State And Gaps
 
 - This repository is intentionally at scaffold stage.
+- Expo Router base setup is in place; route expansion should happen in `src/app/`.
 - Clerk, Podcast Index proxy integration, `expo-audio`, and `expo-file-system` usage are expected future feature work, not completed integrations.
 - There is no test/lint pipeline yet; do not assume `test`, `lint`, or CI scripts exist.
 
@@ -40,7 +46,7 @@
 ## Architecture Conventions To Follow
 
 - Prefer this structure when adding new code:
-  - `src/screens` for route-level screens.
+  - `src/app` for Expo Router route files and layout groups.
   - `src/components` for reusable UI.
   - `src/services` for API clients and external integrations.
   - `src/hooks` for reusable stateful logic.
@@ -50,6 +56,14 @@
   - `src/constants` for static config and keys.
 - Keep API calls and storage access out of UI components.
 - Keep side effects in hooks/services.
+
+## Routing Conventions (Expo Router)
+
+- Keep route files under `src/app/`.
+- Use `_layout.tsx` files to define navigator/layout wrappers.
+- Use static route files like `podcasts.tsx` and dynamic routes like `[feedId].tsx`.
+- Prefer shallow route nesting unless deeper grouping is necessary.
+- Use Expo Router primitives (`Link`, `useRouter`, `useLocalSearchParams`) for navigation and params.
 
 ## TypeScript Rules
 
@@ -63,6 +77,7 @@
 ## Environment Variables
 
 - Use `.env.local` for local development values (already gitignored).
+- Add env typings in `expo-env.d.ts` when introducing new `EXPO_PUBLIC_*` variables.
 - Required for auth integration:
   - `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`
 - Required once Podcast Index proxy is added:
