@@ -1,6 +1,18 @@
+import { useAuth } from "@clerk/expo";
+import { type Href, Redirect } from "expo-router";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 
 export default function TabsLayout() {
+  const { isLoaded, isSignedIn } = useAuth();
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  if (!isSignedIn) {
+    return <Redirect href={"/(auth)/sign-in" as Href} />;
+  }
+
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="home">
