@@ -10,14 +10,18 @@ import type {
 const TRENDING_QUERY_KEY = [
   "podcasts",
   "trending",
-  { lang: "en", max: 20 },
+  { lang: "pt,en", max: 20, window: "7d" },
 ] as const;
 
+const ONE_WEEK_SECONDS = 7 * 24 * 60 * 60;
+
 const fetchTrendingPodcasts = async (): Promise<PodcastIndexFeed[]> => {
+  const since = Math.floor(Date.now() / 1000) - ONE_WEEK_SECONDS;
   const podcastIndex = createPodcastIndexService();
   const response = await podcastIndex.getTrendingPodcasts({
     max: 20,
-    lang: "en",
+    lang: "pt,en",
+    since,
   });
 
   return response.feeds ?? [];
