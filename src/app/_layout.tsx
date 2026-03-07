@@ -26,18 +26,22 @@ function RootStack() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="oauth-native-callback"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen name="sso-callback" options={{ headerShown: false }} />
       <Stack.Protected guard={!isSignedIn}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="oauth-native-callback"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="sso-callback" options={{ headerShown: false }} />
       </Stack.Protected>
 
       <Stack.Protected guard={isSignedIn}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="profile"
+          options={{ title: "Profile", presentation: "modal" }}
+        />
       </Stack.Protected>
     </Stack>
   );

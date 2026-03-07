@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/expo";
-import { SignOutButton } from "@/components/sign-out-button";
+import { type Href, Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function HomeScreen() {
@@ -11,7 +11,9 @@ export default function HomeScreen() {
       <Text style={styles.meta}>
         {user?.emailAddresses?.[0]?.emailAddress ?? "Signed in"}
       </Text>
-      <SignOutButton />
+      <Link href={"/profile" as Href} style={styles.profileLink}>
+        Open profile
+      </Link>
     </View>
   );
 }
@@ -31,5 +33,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     marginBottom: 12,
+  },
+  profileLink: {
+    color: "#0f766e",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });
