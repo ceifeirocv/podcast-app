@@ -20,6 +20,12 @@ export type PodcastIndexFeed = {
   id: number;
   title: string;
   url?: string;
+  image?: string;
+  artwork?: string;
+  author?: string;
+  description?: string;
+  language?: string;
+  trendScore?: number;
   [key: string]: unknown;
 };
 
@@ -38,6 +44,21 @@ export type PodcastIndexEnvelope = {
 
 export type PodcastIndexFeedsResponse = PodcastIndexEnvelope & {
   feeds: PodcastIndexFeed[];
+};
+
+export type PodcastIndexTrendingQuery = {
+  max?: number;
+  since?: number;
+  lang?: string;
+  cat?: string;
+  notcat?: string;
+};
+
+export type PodcastIndexTrendingResponse = PodcastIndexEnvelope & {
+  feeds: PodcastIndexFeed[];
+  count?: number;
+  max?: number | null;
+  since?: number | null;
 };
 
 export type PodcastIndexEpisodesResponse = PodcastIndexEnvelope & {
@@ -195,6 +216,8 @@ export const createPodcastIndexService = (config?: PodcastIndexAuthConfig) => {
       request<PodcastIndexFeedsResponse>("/search/bytitle", { q: title, max }),
     getPodcastByFeedId: (feedId: number) =>
       request<PodcastIndexFeedsResponse>("/podcasts/byfeedid", { id: feedId }),
+    getTrendingPodcasts: (query: PodcastIndexTrendingQuery = {}) =>
+      request<PodcastIndexTrendingResponse>("/podcasts/trending", query),
     getEpisodesByFeedId: (feedId: number, max = 20) =>
       request<PodcastIndexEpisodesResponse>("/episodes/byfeedid", {
         id: feedId,
