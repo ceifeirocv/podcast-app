@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,44 +8,12 @@ import {
   View,
 } from "react-native";
 
-import { createPodcastIndexService } from "@/services/podcastIndex";
+import { useTrendingPodcasts } from "@/hooks/use-trending-podcasts";
 import type { PodcastIndexFeed } from "@/services/podcastIndex";
 
 export default function HomeScreen() {
-  const [feeds, setFeeds] = useState<PodcastIndexFeed[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const loadTrending = useCallback(async (refresh = false) => {
-    if (refresh) {
-      setIsRefreshing(true);
-    } else {
-      setIsLoading(true);
-    }
-
-    setErrorMessage(null);
-
-    try {
-      const podcastIndex = createPodcastIndexService();
-      const response = await podcastIndex.getTrendingPodcasts({
-        max: 20,
-        lang: "en",
-      });
-
-      setFeeds(response.feeds ?? []);
-    } catch (error) {
-      console.error("[PodcastIndex] request failed", error);
-      setErrorMessage("Unable to load trending podcasts right now.");
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadTrending();
-  }, [loadTrending]);
+  const { feeds, errorMessage, isPending, isRefetching, refetch } =
+    useTrendingPodcasts();
 
   const renderItem = ({ item }: { item: PodcastIndexFeed }) => {
     return (
@@ -80,7 +47,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.heading}>Trending Podcasts</Text>
 
-      {isLoading ? (
+      {isPending ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator size="large" color="#0f766e" />
           <Text style={styles.loadingText}>Loading trending podcasts...</Text>
@@ -90,7 +57,7 @@ export default function HomeScreen() {
           <Text style={styles.errorText}>{errorMessage}</Text>
           <Pressable
             accessibilityRole="button"
-            onPress={() => void loadTrending()}
+            onPress={() => void refetch()}
             style={({ pressed }) => [
               styles.retryButton,
               pressed ? styles.retryButtonPressed : undefined,
@@ -105,8 +72,8 @@ export default function HomeScreen() {
           keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
-          refreshing={isRefreshing}
-          onRefresh={() => void loadTrending(true)}
+          refreshing={isRefetching}
+          onRefresh={() => void refetch()}
           ListEmptyComponent={
             <Text style={styles.emptyText}>No trending podcasts found.</Text>
           }
