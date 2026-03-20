@@ -32,13 +32,13 @@ export default function TrendingCard({
       )}
 
       <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={2} accessibilityRole="header" allowFontScaling={true}>
+        <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail" accessibilityRole="header" allowFontScaling={true}>
           {title}
         </Text>
-        <Text style={styles.meta} numberOfLines={1} allowFontScaling={true}>
+        <Text style={styles.meta} numberOfLines={1} ellipsizeMode="tail" allowFontScaling={true}>
           {author}
         </Text>
-        <Text style={styles.meta} numberOfLines={1} allowFontScaling={true}>
+        <Text style={styles.meta} numberOfLines={1} ellipsizeMode="tail" allowFontScaling={true}>
           Trend score: {String((feed as any).trendScore ?? "-")}
         </Text>
       </View>
@@ -52,7 +52,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#e2e8f0",
-    padding: 8,
+    padding: 6,
+    flex: 1,
+    alignSelf: "stretch",
   },
   pressed: {
     opacity: 0.95,
@@ -73,11 +75,13 @@ const styles = StyleSheet.create({
   },
   body: {
     marginTop: 8,
+    minHeight: 60,
   },
   title: {
     fontSize: 15,
     fontWeight: "700",
     color: "#0f172a",
+    lineHeight: 20,
   },
   meta: {
     fontSize: 13,

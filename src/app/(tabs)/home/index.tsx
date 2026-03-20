@@ -104,16 +104,16 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
   columnWrapper: {
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 6,
   },
   itemWrapper: {
     flex: 1,
-    marginHorizontal: 6,
-    marginBottom: 10,
+    marginHorizontal: 4,
+    marginBottom: 8,
   },
   card: {
     marginHorizontal: 16,
