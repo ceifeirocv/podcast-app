@@ -45,8 +45,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Trending Podcasts</Text>
-
       {isPending ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator size="large" color="#0f766e" />
