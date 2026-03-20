@@ -15,6 +15,11 @@
       "source": "expo/skills",
       "sourceType": "github",
       "computedHash": "523901a0f2dfddc91f6c3b09320e240abfe7c81b6f7277e14774ec39ac0c544b"
+    },
+    "tanstack-query": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "be55d2665a2644210c94f5986afe5e391be94c1df256b18cb94861ff2b597685"
     }
   }
 }
