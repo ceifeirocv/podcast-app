@@ -4,20 +4,22 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.90.21",
-    "expo": "~55.0.5",
-    "expo-auth-session": "^55.0.7",
-    "expo-constants": "~55.0.7",
-    "expo-crypto": "^55.0.9",
-    "expo-linking": "~55.0.7",
-    "expo-router": "~55.0.4",
+    "@clerk/expo": "^3.0.1",
+    "@tanstack/react-query": "^5.91.3",
+    "expo": "~55.0.8",
+    "expo-auth-session": "^55.0.9",
+    "expo-constants": "~55.0.9",
+    "expo-crypto": "^55.0.10",
+    "expo-linking": "~55.0.8",
+    "expo-router": "~55.0.7",
+    "expo-secure-store": "~55.0.9",
     "expo-status-bar": "~55.0.4",
-    "expo-web-browser": "^55.0.9",
+    "expo-web-browser": "^55.0.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-native": "0.83.2",
@@ -25,8 +27,8 @@
     "react-native-screens": "~4.23.0"
   },
   "devDependencies": {
-    "@types/react": "~19.2.2",
-    "typescript": "~5.9.2"
+    "@types/react": "~19.2.14",
+    "typescript": "~5.9.3"
   },
   "private": true,
   "packageManager": "pnpm@10.29.3+sha512.498e1fb4cca5aa06c1dcf2611e6fafc50972ffe7189998c409e90de74566444298ffe43e6cd2acdc775ba1aa7cc5e092a8b7054c811ba8c5770f84693d33d2dc"
