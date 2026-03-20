@@ -1,46 +1,26 @@
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 import { useTrendingPodcasts } from "@/hooks/use-trending-podcasts";
+import TrendingCard from "@/components/trending-card";
 import type { PodcastIndexFeed } from "@/services/podcastIndex";
 
 export default function HomeScreen() {
   const { feeds, errorMessage, isPending, isRefetching, refetch } =
     useTrendingPodcasts();
 
+  const { width } = useWindowDimensions();
+  const columns = width >= 720 ? 3 : 2;
+
   const renderItem = ({ item }: { item: PodcastIndexFeed }) => {
-    return (
-      <View style={styles.card}>
-        {item.artwork || item.image ? (
-          <Image
-            source={{ uri: String(item.artwork ?? item.image) }}
-            style={styles.artwork}
-          />
-        ) : (
-          <View style={styles.artworkFallback}>
-            <Text style={styles.artworkFallbackText}>No image</Text>
-          </View>
-        )}
-        <View style={styles.cardBody}>
-          <Text style={styles.cardTitle} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <Text style={styles.cardMeta} numberOfLines={1}>
-            {item.author || "Unknown author"}
-          </Text>
-          <Text style={styles.cardMeta} numberOfLines={1}>
-            Trend score: {item.trendScore ?? "-"}
-          </Text>
-        </View>
-      </View>
-    );
+    return <TrendingCard feed={item} />;
   };
 
   return (
@@ -69,6 +49,8 @@ export default function HomeScreen() {
           data={feeds}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
+          numColumns={columns}
+          columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={styles.listContent}
           refreshing={isRefetching}
           onRefresh={() => void refetch()}
@@ -118,6 +100,11 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+    paddingHorizontal: 16,
+  },
+  columnWrapper: {
+    justifyContent: "space-between",
+    marginTop: 10,
   },
   card: {
     marginHorizontal: 16,
