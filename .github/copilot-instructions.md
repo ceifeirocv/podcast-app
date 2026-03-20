@@ -156,3 +156,4 @@
 - `building-native-ui`: use for Expo Router UI composition, screen patterns, and native-feeling layout decisions.
 - `expo-tailwind-setup`: use only when introducing Tailwind/NativeWind setup.
 - `native-data-fetching`: use for any network request, caching, and error-handling patterns.
+- `tanstack-query`: use for data fetching and caching patterns if TanStack Query is introduced.
