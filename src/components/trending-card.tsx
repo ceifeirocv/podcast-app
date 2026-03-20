@@ -16,12 +16,15 @@ export default function TrendingCard({
   return (
     <Pressable
       onPress={onPress}
+      accessible={true}
       accessibilityRole="button"
-      accessibilityLabel={`${title} by ${author}`}
+      accessibilityLabel={`${title} by ${author}. Trend score: ${String((feed as any).trendScore ?? 'unknown')}`}
+      accessibilityHint="Opens podcast details"
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       style={({ pressed }) => [styles.container, pressed ? styles.pressed : undefined]}
     >
       {artworkUri ? (
-        <Image source={{ uri: artworkUri }} style={styles.artwork} />
+        <Image source={{ uri: artworkUri }} style={styles.artwork} accessibilityIgnoresInvertColors />
       ) : (
         <View style={[styles.artwork, styles.artworkFallback]}>
           <Text style={styles.artworkFallbackText}>No image</Text>
@@ -29,13 +32,13 @@ export default function TrendingCard({
       )}
 
       <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={styles.title} numberOfLines={2} accessibilityRole="header" allowFontScaling={true}>
           {title}
         </Text>
-        <Text style={styles.meta} numberOfLines={1}>
+        <Text style={styles.meta} numberOfLines={1} allowFontScaling={true}>
           {author}
         </Text>
-        <Text style={styles.meta} numberOfLines={1}>
+        <Text style={styles.meta} numberOfLines={1} allowFontScaling={true}>
           Trend score: {String((feed as any).trendScore ?? "-")}
         </Text>
       </View>
