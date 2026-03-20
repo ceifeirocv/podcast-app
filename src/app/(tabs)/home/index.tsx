@@ -20,7 +20,11 @@ export default function HomeScreen() {
   const columns = width >= 720 ? 3 : 2;
 
   const renderItem = ({ item }: { item: PodcastIndexFeed }) => {
-    return <TrendingCard feed={item} />;
+    return (
+      <View style={styles.itemWrapper}>
+        <TrendingCard feed={item} />
+      </View>
+    );
   };
 
   return (
@@ -105,6 +109,11 @@ const styles = StyleSheet.create({
   columnWrapper: {
     justifyContent: "space-between",
     marginTop: 10,
+  },
+  itemWrapper: {
+    flex: 1,
+    marginHorizontal: 6,
+    marginBottom: 10,
   },
   card: {
     marginHorizontal: 16,
