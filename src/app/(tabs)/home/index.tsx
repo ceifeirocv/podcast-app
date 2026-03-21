@@ -11,6 +11,7 @@ import {
 import { useTrendingPodcasts } from "@/hooks/use-trending-podcasts";
 import TrendingCard from "@/components/trending-card";
 import type { PodcastIndexFeed } from "@/services/podcastIndex";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const { feeds, errorMessage, isPending, isRefetching, refetch } =
@@ -18,11 +19,12 @@ export default function HomeScreen() {
 
   const { width } = useWindowDimensions();
   const columns = width >= 720 ? 3 : 2;
+  const router = useRouter();
 
   const renderItem = ({ item }: { item: PodcastIndexFeed }) => {
     return (
       <View style={styles.itemWrapper}>
-        <TrendingCard feed={item} />
+        <TrendingCard feed={item} onPress={() => void router.push(`/home/podcast/${item.id}`)} />
       </View>
     );
   };
