@@ -23,7 +23,7 @@ export default function PodcastScreen() {
   const renderItem = useCallback(({ item }: { item: Episode }) => (
     <EpisodeListItem
       episode={item}
-      onOpenDetails={() => router.push(`/episode/${feedId}/${item.id}`)}
+      onOpenDetails={() => router.push(`/home/podcast/${feedId}/${item.id}`)}
       onPlay={() => {
         // placeholder
       }}
