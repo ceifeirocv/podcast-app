@@ -68,6 +68,7 @@ export const usePodcast = (feedId?: number | string | null) => {
       const pubDate = typeof pubDateRaw === "number" ? pubDateRaw : null;
 
       return {
+        ...item,
         id: item.id,
         title: item.title ?? "",
         enclosureUrl: url,
@@ -75,7 +76,6 @@ export const usePodcast = (feedId?: number | string | null) => {
         duration,
         pubDate,
         guid: (item as any)["guid"] as string | null,
-        ...item,
       } as Episode;
     });
 
