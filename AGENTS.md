@@ -4,14 +4,21 @@
 
 ## Research & Documentation
 
-- **Always save research** (API findings, library behavior, architecture decisions, etc.) to the `doc/` folder before writing code that depends on it.
+- **Always save research** (API findings, library behavior, architecture decisions, etc.) to the `doc/research` folder before writing code that depends on it.
 - **Always check `doc/` first** before researching a topic — a relevant document may already exist. If it does, use it as the primary source of truth and update it if new findings contradict or extend it.
-- **Always check available skills during research** — a skill may already cover the topic; if one is relevant, use it as a primary source before researching externally.
-- **Always check `doc/` before planning** any task or feature — existing research must inform the plan before any code or design decisions are made.
-- **Always check available skills before planning** — review the skills list and suggest which ones are relevant to the task before proceeding.
+- **When researching a topic, check if the source recommends any skills** — if it does, surface and use those recommended skills as part of the research.
 - Use clear, descriptive filenames (e.g., `doc/nextjs-routing.md`, `doc/auth-flow.md`).
 
 <!-- END:research-rules -->
+
+<!-- BEGIN:planning-rules -->
+
+## Planning
+
+- **Always check `doc/` before planning** any task or feature — existing research must inform the plan before any code or design decisions are made.
+- **Always check available skills and agents before planning** — review both the skills list and any available agents, then explicitly reference which skills and agents should be used for each individual task in the plan.
+
+<!-- END:planning-rules -->
 
 <!-- BEGIN:fleet-rules -->
 
@@ -28,7 +35,12 @@
 
 - Use conventional commit messages: `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`.
 - Squash noisy/WIP commits before merging into main.
+- Start new branches from the latest `main` to avoid merge conflicts.
 - Never commit directly to `main` — always use a branch and PR/MR.
+- **Never work directly on `main` or `development`** — always create a new branch for any code changes, even minor ones.
+- If a change is unrelated to the current branch, create a separate branch for it before making any edits.
+- Do not co-author commits with the agent.
+- Do not mention the agent in commit messages or PR descriptions.
 
 <!-- END:git-rules -->
 
