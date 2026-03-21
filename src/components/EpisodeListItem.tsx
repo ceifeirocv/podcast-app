@@ -12,6 +12,7 @@ export type Episode = {
 type Props = {
   episode: Episode;
   onPlay?: (episode: Episode) => void;
+  onOpenDetails?: (episode: Episode) => void;
   onDownload?: (episode: Episode) => void;
 };
 
@@ -23,7 +24,7 @@ export default function EpisodeListItem({ episode, onPlay, onDownload }: Props) 
 
   return (
     <View style={styles.container} accessibilityRole="button">
-      <TouchableOpacity onPress={() => onPlay?.(episode)} accessibilityLabel={`Play ${episode.title}`} style={styles.content}>
+      <TouchableOpacity onPress={() => onOpenDetails ? onOpenDetails(episode) : onPlay?.(episode)} accessibilityLabel={`Open details for ${episode.title}`} style={styles.content}>
         <View style={styles.textContainer}>
           <Text style={styles.title} numberOfLines={2}>{episode.title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
