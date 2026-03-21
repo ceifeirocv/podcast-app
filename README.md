@@ -67,6 +67,20 @@ Notes:
 - `pnpm ios` - run the iOS native app
 - `pnpm web` - start the web target
 
+## Navigation (Native Tabs)
+
+This project uses Expo Router's native tabs (NativeTabs) to provide a platform-native tab bar on iOS and Android. The implementation lives at `src\app\(tabs)\_layout.tsx`.
+
+Notes:
+- Requires Expo SDK 55+ (this project uses `expo: ~55.0.8`). Native tabs are provided by `expo-router/unstable-native-tabs` and are considered alpha/unstable; APIs may change between SDK versions.
+- Native tabs rely on native builds. To fully test native-tab behavior (SF Symbols, asset-catalog icons, badges), run on device/simulator with a development build or using `pnpm ios` / `pnpm android` rather than Expo Go.
+- For custom icons on iOS, you can use Xcode asset catalogs (`xcasset`) and the `xcasset` prop. For cross-platform icons, use the `sf` (iOS) and `md` (Android) props as used in `src\app\(tabs)\_layout.tsx`.
+
+Quick checklist:
+- To run locally with native tabs: `pnpm install` then `pnpm ios` or `pnpm android`, or create a dev build with EAS (`eas build --profile development`).
+- Test icon tinting, badge rendering, tab hide/show behavior, and pop-to-root behavior on both platforms.
+- If a heavily custom tab design is needed, prefer JavaScript tabs or a custom tab bar instead of NativeTabs.
+
 ## Main dependencies
 
 - `expo`, `expo-router`
