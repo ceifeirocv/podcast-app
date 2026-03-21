@@ -23,6 +23,7 @@ export default function PodcastScreen() {
   const renderItem = useCallback(({ item }: { item: Episode }) => (
     <EpisodeListItem
       episode={item}
+      onOpenDetails={() => router.push(`/episode/${feedId}/${item.id}`)}
       onPlay={() => {
         // placeholder
       }}
@@ -30,7 +31,7 @@ export default function PodcastScreen() {
         // placeholder
       }}
     />
-  ), []);
+  ), [feedId, router]);
 
   const keyExtractor = useCallback((item: Episode) => item.id, []);
 
