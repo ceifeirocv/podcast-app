@@ -1,136 +1,102 @@
-# Trending Cards Accessibility QA Plan
+# Trending Cards Accessibility
 
-Summary
----
-This document defines the accessibility checklist, manual test steps (iOS VoiceOver and Android TalkBack), device matrix, automation suggestions, manual test cases, and acceptance criteria for the Trending Cards UI component.
+This document is the single source of truth for the trending cards accessibility guidance in the current repo.
 
-1. Accessibility checklist
----
-- Screen reader labels
-  - Each card must be a single accessible element with an explicit accessibilityLabel describing: "Podcast title by author — short description/metadata" (e.g., "The Daily by The New York Times, 3 episodes today").
-  - Actions (play, add to queue, download) must expose accessibilityRole ("button") and accessibilityLabel ("Play episode: <title>") and accessibilityHint where helpful.
-  - Decorative images must set accessibilityIgnoresInvertColors (if needed) and accessibilityLabel to empty string or accessible={false}.
-- Touch target sizes
-  - Interactive targets (entire card and inline action buttons) must be at least 44x44 points (Apple) / 48x48 dp (Android). Use padding or hitSlop to meet this.
-- Color contrast
-  - Text and icons must meet WCAG AA contrast: 4.5:1 for normal text, 3:1 for large text. Check stateful contrasts (disabled, selected, focus).
-- Dynamic type / font scaling
-  - Support system font scaling. Verify layout adapts without clipping or overlap at Large/Accessibility font sizes.
-- Keyboard & focus navigation
-  - Cards and action buttons must be focusable (accessible focusable) and navigable by keyboard, external keyboard, and D-pad/TV remotes where applicable.
-  - Provide visible focus ring/highlight state for keyboard focus.
-- Focus order & semantics
-  - Ensure semantic reading order matches visual order. Group related elements so screen reader users perceive the card as a meaningful unit.
-- Live regions & announcements
-  - When content changes (e.g., download completed), send an accessibility announcement (AccessibilityInfo.announceForAccessibility) or use live region semantics.
+## Current implementation
 
-2. Test steps
----
-A. iOS (VoiceOver)
-- Setup
-  - Settings → Accessibility → VoiceOver → turn ON.
-- Navigation
-  1. With VoiceOver on, swipe right/left to move through elements on the Trending screen.
-  2. Verify each card is announced as a single element with useful text (title, author, short metadata) and ends with action hint (e.g., "double-tap to open").
-  3. Explore actions: use two-finger scrub or rotor to find actionable controls. Activate card (double-tap); verify it opens correct detail.
-  4. Focus on inline buttons (Play/Download). VoiceOver must announce role (button) and label.
-- Dynamic checks
-  - Increase Dynamic Type to Large/Accessibility sizes: re-run navigation verifying no truncation and logical reading order.
-  - Trigger a download and verify that completion is announced.
+- Screen: `src\app\(tabs)\home\index.tsx`
+- Card component: `src\components\trending-card.tsx`
+- Data is rendered in a `FlatList` of `TrendingCard` items on the Home tab.
+- There is no `src\components\TrendingCard.tsx`.
+- There is no `src\app\podcasts.tsx`.
 
-B. Android (TalkBack)
-- Setup
-  - Settings → Accessibility → TalkBack → turn ON.
-- Navigation
-  1. Use swipe right/left to move between elements. Verify each card and its role/descriptions are read correctly.
-  2. Long-press or explore by touch to interact with inline actions; verify contentDescription and role are correct.
-  3. Activate card (double-tap) and confirm navigation.
-- Dynamic checks
-  - Change font size (Display → Font size / Accessibility → Font size) and verify layout and readability.
-  - Trigger download flow and ensure TalkBack announces status changes.
+## What exists today
 
-3. Device matrix and variants to test
----
-- iOS
-  - iPhone SE (small screen) — Portrait + Landscape
-  - iPhone 13/14/15 (standard) — Portrait + Landscape
-  - iPad (mini / Air) — Portrait + Landscape
-  - OS versions: iOS 15, iOS 16, iOS 17+ (or current supported min)
-- Android
-  - Small phone (e.g. Pixel 4a) — Portrait + Landscape
-  - Large phone (e.g. Pixel 6/7 / Samsung) — Portrait + Landscape
-  - Tablet (8" + 10") — Portrait + Landscape
-  - OS versions: Android 11, Android 12, Android 13+
-- Variants
-  - Dark mode and Light mode
-  - High contrast mode (Android) / Increase Contrast (iOS) where available
-  - Font scaling at multiple steps: Default / Large / Accessibility Largest
-  - RTL (right-to-left) language testing
+`src\components\trending-card.tsx` currently does the following:
 
-4. Automation suggestions
----
-- Unit and snapshot tests
-  - Ensure components render accessibility props: assert presence of accessibilityLabel, accessibilityRole, and accessible flags in unit tests.
-- Static analysis
-  - Use an accessibility lint rule (ESLint plugin for React Native accessibility) to flag missing accessibility props.
-- Accessibility scanning
-  - For web (expo web): integrate axe-core / jest-axe to scan the Trending page DOM for common violations.
-  - For React Native: use tools like react-native-accessibility-engine or axe for Android via WebDriver/Playwright where possible.
-- E2E flows
-  - Detox / Appium / Playwright Mobile: write E2E tests that enable TalkBack/VoiceOver (or simulate) and assert accessibility labels and activation paths. Example flow:
-    1. Launch app → navigate to Trending
-    2. Query for card element by accessibilityLabel → assert it exists
-    3. Press action button via accessibility id → assert navigation or playback state
-- CI Integration
-  - Fail PR builds when accessibility lint rules or automated scans find high-severity violations.
+- wraps the card in a `Pressable`
+- sets `accessible={true}`
+- sets `accessibilityRole="button"`
+- sets an explicit `accessibilityLabel` in the format:
+  - `"{title} by {author}. Trend score: {trendScore}"`
+- sets `accessibilityHint="Opens podcast details"`
+- uses `hitSlop` to expand the touch target
+- enables font scaling on title and metadata text
+- uses `accessibilityIgnoresInvertColors` on the artwork image
 
-5. Manual test cases
----
-- TC-01: Card screen reader label
-  - Steps: Open Trending, enable VoiceOver/TalkBack, navigate to first card
-  - Expected: Card read as "<Title> by <Author>, <meta>. Double-tap to open."
-- TC-02: Tap targets
-  - Steps: Inspect Play and Download buttons on multiple devices with grid overlay or inspector
-  - Expected: Both buttons have at least 44x44pt / 48x48dp clickable area
-- TC-03: Contrast
-  - Steps: Use colour contrast analyzer or browser dev tools (web) to measure ratios
-  - Expected: Normal text >= 4.5:1, large text >= 3:1
-- TC-04: Dynamic type
-  - Steps: Set largest system font size and verify card remains readable and actions accessible
-  - Expected: No clipping, all labels read fully
-- TC-05: Keyboard navigation
-  - Steps: Attach external keyboard, use Tab/Shift+Tab to focus cards and buttons
-  - Expected: Focus order logical, visible focus indicator, Enter/Space activates
+`src\app\(tabs)\home\index.tsx` currently does the following:
 
-6. Acceptance criteria & pass/fail markers
----
-- Pass if ALL of the following are true:
-  - Every interactive card exposes a non-empty accessibilityLabel and accessibilityRole.
-  - All action buttons expose accessibilityLabel and are reachable via accessibility focus.
-  - Touch targets meet minimum size requirements on all tested devices.
-  - Text contrast meets WCAG AA thresholds for normal and large text in both themes.
-  - UI remains usable and readable at the highest system font scaling setting.
-  - Keyboard navigation order is logical and complete; focus states visible.
-  - Dynamic updates (download complete, queue changes) are announced.
+- renders the trending cards in a 2-column or 3-column responsive grid
+- exposes the retry action as a button with `accessibilityRole="button"`
+- provides loading, error, and empty states
 
-- Fail if ANY of the following occur:
-  - Missing or generic labels (e.g., "button") on actionable controls.
-  - Touch targets smaller than required on any primary device class.
-  - Contrast failures on primary brand text or interactive labels.
-  - Layout breaks (overlap/clipping) at large font sizes.
+## Current gap to watch
 
-- Severity & markers
-  - Critical (blocker): Missing labels preventing navigation/activation; these must be fixed before release.
-  - Major: Contrast below required thresholds or unusable layout at large fonts.
-  - Minor: Hints, small visual focus styling, or non-critical wording improvements.
+On the Home screen, `TrendingCard` is rendered without an `onPress` handler right now. That means the card is announced like a button and says it opens podcast details, but the screen does not currently wire up that action.
 
-Appendix: Notes for devs
----
-- Recommended props (React Native / Expo):
-  - Card container: accessible={true}, accessibilityRole="button", accessibilityLabel={`${title} by ${author}. ${shortMeta}`}, accessibilityHint="Opens podcast details"
-  - Inline actions: accessibilityRole="button", accessibilityLabel="Play episode: <title>"
-  - Use hitSlop to expand touch area without changing visual layout.
-- Use AccessibilityInfo.announceForAccessibility on status changes.
+Treat this as the key accessibility follow-up:
 
+- if the card should navigate, keep the button role and hint, and wire `onPress`
+- if the card is not interactive yet, remove the button semantics and action hint until navigation exists
 
+## Practical review checklist
 
+Use this checklist when touching either file above.
+
+### Screen reader semantics
+
+- Each card should be announced once, not as disconnected artwork/title/meta fragments.
+- The card label should include the podcast title and author.
+- The label should only include trend score if it is useful to the user.
+- Hints must match real behavior on the current screen.
+
+### Touch targets
+
+- The card must meet the platform minimum target size:
+  - iOS: 44x44 pt
+  - Android: 48x48 dp
+- Keep `hitSlop` or equivalent spacing if the visual layout shrinks.
+
+### Dynamic type
+
+- Title and metadata must remain readable with larger system font sizes.
+- Card content must not overlap or clip when font scaling is increased.
+
+### Focus and navigation
+
+- Focus order should follow the visual grid order.
+- The retry button in the error state must remain reachable and clearly announced.
+- If card interaction is added later, keyboard and assistive-tech activation should trigger the same behavior as touch.
+
+### Visual accessibility
+
+- Text should continue to meet WCAG AA contrast against the card background.
+- Artwork should stay decorative unless it conveys information not already present in the card label.
+
+## Manual QA
+
+### VoiceOver / TalkBack
+
+1. Open the Home tab.
+2. Move through the loading, error, empty, and populated states.
+3. In the populated state, verify each trending card is announced with a useful label.
+4. Confirm the retry button is announced as a button in the error state.
+5. If cards remain non-interactive, confirm the docs and implementation do not claim they open details.
+
+### Font scaling
+
+1. Increase system font size to a large accessibility setting.
+2. Re-open the Home tab.
+3. Verify the title and metadata still fit within the card without clipping or overlap.
+
+## When updating the implementation
+
+- Update this document if the card becomes interactive, gains secondary actions, or changes its accessible label strategy.
+- Keep references aligned to:
+  - `src\components\trending-card.tsx`
+  - `src\app\(tabs)\home\index.tsx`
+
+## References
+
+- React Native accessibility docs: https://reactnative.dev/docs/accessibility
+- WCAG 2.1: https://www.w3.org/TR/WCAG21/

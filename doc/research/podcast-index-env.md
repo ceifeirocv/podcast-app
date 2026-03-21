@@ -1,50 +1,75 @@
-# Podcast Index Environment Variables and Developer Setup
+# Podcast Index environment variables for this practice project
 
-This document describes the environment variables used to integrate with Podcast Index in development, how to set them locally, and security recommendations for production.
+This document explains how Podcast Index is wired in the current codebase and which environment variables the Expo client currently reads for this learning/practice project.
 
-## Environment variables
+## Current code behavior
 
-- EXPO_PUBLIC_PODCAST_INDEX_KEY
-- EXPO_PUBLIC_PODCAST_INDEX_SECRET
+Today, `src/services/podcastIndex/service.ts` signs Podcast Index requests directly in the Expo client.
 
-These variables are expected to be available at build/runtime in the app. They are used to authenticate requests to the Podcast Index API.
+Current client-side variables:
 
-## Local development
+- `EXPO_PUBLIC_PODCAST_INDEX_KEY`
+- `EXPO_PUBLIC_PODCAST_INDEX_SECRET`
+- `EXPO_PUBLIC_PODCAST_INDEX_USER_AGENT`
+- `EXPO_PUBLIC_PODCAST_INDEX_BASE_URL` (optional)
 
-You have two common options for supplying these variables while developing locally:
+Behavior in the current implementation:
 
-1. .env.local (recommended for single-developer local setup)
+- If `EXPO_PUBLIC_PODCAST_INDEX_BASE_URL` is not set, the client defaults to `https://api.podcastindex.org/api/1.0`.
+- The client computes Podcast Index auth headers in-app:
+  - `User-Agent`
+  - `X-Auth-Key`
+  - `X-Auth-Date`
+  - `Authorization` (SHA-1 of key + secret + timestamp)
+- If the key or secret is missing, the service throws a configuration error.
 
-- Create a file at the project root named `.env.local` and add:
+This matches the current code, but it is not a safe production architecture because the app bundle can expose any `EXPO_PUBLIC_*` value.
 
-  EXPO_PUBLIC_PODCAST_INDEX_KEY=your_key_here
-  EXPO_PUBLIC_PODCAST_INDEX_SECRET=your_secret_here
+## Security status
 
-- Restart the Expo/dev server after adding or changing the file so the values are picked up.
+### Intentionally insecure for practice
 
-2. Expo secrets (recommended for shared/team development)
+The following variables are public Expo environment variables and are therefore bundled into the client:
 
-- Use `expo secret` or the Expo Application Services (EAS) secrets to store environment values securely and inject them into builds.
-- Example (local EAS workflow): `eas secret:create --name EXPO_PUBLIC_PODCAST_INDEX_KEY --value "your_key_here"`
+- `EXPO_PUBLIC_PODCAST_INDEX_KEY`
+- `EXPO_PUBLIC_PODCAST_INDEX_SECRET`
+- `EXPO_PUBLIC_PODCAST_INDEX_USER_AGENT`
+- `EXPO_PUBLIC_PODCAST_INDEX_BASE_URL`
 
-Check Expo documentation for exact commands for your chosen workflow.
+Important:
 
-## Security caveat
+- `EXPO_PUBLIC_PODCAST_INDEX_SECRET` must be treated as development-only.
+- `EXPO_PUBLIC_PODCAST_INDEX_KEY` should also be treated as development-only when paired with direct client-side signing.
+- This repo is intentionally keeping those credentials in `EXPO_PUBLIC_*` variables because the goal is hands-on learning and a simpler practice setup.
+- That means the security risk is knowingly being ignored for this project.
+- It is still insecure for production builds or any app distributed to real users.
 
-Environment variables that begin with `EXPO_PUBLIC_` are included in the built app bundle and are therefore public. This means anyone who inspects your distributed app (or its network traffic) may be able to discover these values.
+If this app is ever distributed externally with the current setup, assume the Podcast Index credentials can be extracted and should be rotated.
 
-Because Podcast Index credentials should be kept private, do NOT rely on `EXPO_PUBLIC_*` keys to protect secret information in production.
+## Local development setup for the current implementation
 
-Recommended production approach:
+If you need to use the current direct-client approach during local development, add these values to `.env.local`:
 
-- Implement a server-side proxy for Podcast Index API requests. Keep your Podcast Index credentials on the server (not in client-side code), and have the client call your server endpoints which in turn call Podcast Index.
-- This allows you to enforce rate limits, authentication, and hide credentials from the client bundle.
+```env
+EXPO_PUBLIC_PODCAST_INDEX_KEY=your_key_here
+EXPO_PUBLIC_PODCAST_INDEX_SECRET=your_secret_here
+EXPO_PUBLIC_PODCAST_INDEX_USER_AGENT=podcast-app/1.0
+# Optional. Defaults to the official Podcast Index API base URL when omitted.
+EXPO_PUBLIC_PODCAST_INDEX_BASE_URL=https://api.podcastindex.org/api/1.0
+```
 
-## Links / Further research
+Notes:
 
-- See existing research notes: ../research/continue-with-the-research-comply-with-the-repo-in.md
+- Restart Expo after changing `.env.local`.
+- Do not commit `.env.local`.
+- Prefer using throwaway or limited-scope credentials for this workflow whenever possible.
 
+## Practical documentation stance for this repo
 
----
+This repo should document these truths clearly:
 
-Last updated: (auto)
+1. **Current behavior:** the Expo client reads Podcast Index credentials directly and signs requests itself.
+2. **Practice-project stance:** the repo intentionally keeps that insecure setup because reducing infrastructure is part of the learning goal.
+3. **Security caveat:** this should not be mistaken for a production-safe pattern.
+
+Future docs in this repository should stay honest about the current direct-client implementation, keep the `EXPO_PUBLIC_*` setup explicit, and avoid recommending a backend proxy in this practice-project documentation.

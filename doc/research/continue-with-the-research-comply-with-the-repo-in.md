@@ -2,14 +2,16 @@
 
 ## Executive summary
 
-This report continues the previous research into building a single-podcast screen using the Podcast Index API and ensures compliance with repository instructions (AGENTS.md). It documents the API endpoints to use, authentication/signing requirements, a secure proxy pattern, client architecture (data fetching, caching, playback, downloads), UI and routing recommendations for Expo Router, and an implementation checklist. The final report is saved both in session-state and in the repo's doc/research folder to follow AGENTS.md rules.
+This report continues the previous research into building a single-podcast screen using the Podcast Index API and ensures compliance with repository instructions (AGENTS.md). It documents the API endpoints to use, authentication/signing requirements, the direct client-side practice architecture currently used in this repo, data fetching/caching/playback/download recommendations, UI and routing suggestions for Expo Router, and an implementation checklist. The final report is saved both in session-state and in the repo's `doc/research` folder to follow AGENTS.md rules.
 
 ## Scope & assumptions
 
 - Target platform: Expo SDK ~55, TypeScript, Expo Router. Project root: `C:\code\podcast\podcast-app`.
-- Podcast Index API will be consumed via a trusted backend/proxy; mobile app will not ship the API secret.
+- Current repo note: `src/services/podcastIndex/service.ts` already supports direct client-side signing with `EXPO_PUBLIC_PODCAST_INDEX_KEY`, `EXPO_PUBLIC_PODCAST_INDEX_SECRET`, `EXPO_PUBLIC_PODCAST_INDEX_USER_AGENT`, and optional `EXPO_PUBLIC_PODCAST_INDEX_BASE_URL`.
+- Chosen practice-project direction: keep using direct client-side Podcast Index requests from the Expo app so the project stays simple and the request-signing flow remains visible while learning.
+- Explicit learning-only exception: this approach exposes sensitive values through Expo public env variables. That security risk is intentionally being ignored in this practice repo for learning purposes and should not be treated as production guidance.
 - Primary endpoints: `/podcasts/byfeedid` (feed metadata) and `/episodes/byfeedid` (episodes list).
-- No production server is provided in the repo; examples use a small serverless/Node proxy pattern.
+- No backend/proxy is required for the current practice setup.
 
 ## Key API details (what to call)
 
@@ -27,40 +29,31 @@ Use both endpoints to render a rich podcast screen: feed header + episodes list.
 
 Podcast Index requires per-request headers: `User-Agent`, `X-Auth-Key`, `X-Auth-Date`, and `Authorization`. `X-Auth-Date` is the current unix timestamp (seconds). `Authorization` is a SHA-1 hex digest of (apiKey + apiSecret + timestamp). Examples in multiple languages are provided in the official example-code repo.[^7][^8]
 
-Security guidance (must follow):
-- Never embed the API secret in the mobile app binary. Use a small backend/proxy that stores the API secret in environment variables and signs requests server-side.
-- The mobile client talks to the proxy (which performs signed PodcastIndex requests) and receives JSON responses.
-- Proxy allows implementing caching, rate-limit handling, and request-level logging without exposing secrets.
+Security guidance for this repo:
+- The practice project intentionally signs requests in the Expo client with `EXPO_PUBLIC_*` variables so the auth flow is easy to inspect and learn from.
+- This is insecure for production because Expo public env values are bundled into the client and can be extracted.
+- For this repo's current practice goal, accept that risk explicitly and continue with direct calls anyway.
+- If this project ever moves beyond practice/learning, replace the public-secret approach before treating it as a real deployment design.
 
-### Minimal serverless signing example (Node / Vercel / Netlify)
+### Minimal direct signing example (Expo / TypeScript)
 
-```js
-// api/podcast/byfeedid.js  (serverless handler)
-import crypto from 'crypto'
-import fetch from 'node-fetch'
+```ts
+import { createPodcastIndexService } from '@/services/podcastIndex/service'
 
-export default async function handler(req, res) {
-  const { id } = req.query
-  if (!id) return res.status(400).json({ error: 'missing id' })
+const podcastIndex = createPodcastIndexService()
 
-  const APIKEY = process.env.PODINDEX_KEY
-  const APISECRET = process.env.PODINDEX_SECRET
-  const ts = Math.floor(Date.now() / 1000)
-  const auth = crypto.createHash('sha1').update(APIKEY + APISECRET + String(ts)).digest('hex')
+export async function fetchFeedById(feedId: number) {
+  const response = await podcastIndex.getPodcastByFeedId(feedId)
+  return response.feeds[0] ?? null
+}
 
-  const url = `https://api.podcastindex.org/api/1.0/podcasts/byfeedid?id=${encodeURIComponent(id)}`
-  const upstream = await fetch(url, { headers: {
-    'User-Agent': 'podcast-app/1.0',
-    'X-Auth-Key': APIKEY,
-    'X-Auth-Date': String(ts),
-    'Authorization': auth
-  }})
-  const body = await upstream.json()
-  return res.status(upstream.status).json(body)
+export async function fetchEpisodesByFeedId(feedId: number, max = 20) {
+  const response = await podcastIndex.getEpisodesByFeedId(feedId, max)
+  return response.items
 }
 ```
 
-This follows the official signing pattern in the example-code repo[^7].
+This keeps signing inside the app using the same official SHA-1 header pattern described in the example-code repo[^7], but without introducing a proxy layer.
 
 ## Client architecture and data flow
 
@@ -68,9 +61,9 @@ ASCII data flow:
 
 ```
 Mobile Client (Expo Router)
-  ├─> Calls Proxy (/api/proxy/podcasts/byfeedid)  --(HTTPS)-->
-  Proxy Server (signs request, caches)  ──> PodcastIndex API
-  Proxy returns JSON
+  ├─> Signs request in app using expo-crypto + public env vars
+  ├─> Calls PodcastIndex API directly over HTTPS
+  ├─> Receives JSON response in app
   Mobile uses TanStack Query to cache and render
   Mobile uses expo-audio & expo-file-system for playback/downloads
 ```
@@ -79,7 +72,7 @@ Files and folders (recommended):
 - src/app/podcast/[feedId].tsx  -- Expo Router screen
 - src/components/PodcastHeader.tsx
 - src/components/EpisodeListItem.tsx
-- src/services/podcastApi.ts  -- client-facing fetchers talking to proxy
+- src/services/podcastApi.ts  -- client-facing fetchers wrapping `createPodcastIndexService()`
 - src/hooks/usePodcast.ts  -- combined useQuery hooks (feed + episodes)
 - src/store/playback.ts  -- single-source-of-truth for player state (Zustand or context)
 - src/types/podcast.ts
@@ -130,24 +123,21 @@ Map additional fields as needed using the API schemas (`feed_podcast.yaml`, `ite
 - Prefetch episodes when navigating to feed screen from search results.
 - Use query error handling for 401/429 to show appropriate UI and optionally retry/backoff.
 
-Example fetchers (talking to proxy):
+Example fetchers (direct Podcast Index usage):
 
 ```ts
 // src/services/podcastApi.ts
-const BASE = process.env.EXPO_PUBLIC_API_BASE_URL || ''
+import { createPodcastIndexService } from '@/services/podcastIndex/service'
+
+const podcastIndex = createPodcastIndexService()
+
 export async function fetchFeedById(id:number) {
-  const res = await fetch(`${BASE}/proxy/podcasts/byfeedid?id=${id}`)
-  if (!res.ok) throw new Error(await res.text())
-  const json = await res.json()
-  return json.feed
+  const json = await podcastIndex.getPodcastByFeedId(id)
+  return json.feeds[0] ?? null
 }
 
 export async function fetchEpisodesByFeedId(id:number, opts?:{max?:number}) {
-  const q = new URLSearchParams({ id: String(id) })
-  if (opts?.max) q.set('max', String(opts.max))
-  const res = await fetch(`${BASE}/proxy/episodes/byfeedid?${q.toString()}`)
-  if (!res.ok) throw new Error(await res.text())
-  const json = await res.json()
+  const json = await podcastIndex.getEpisodesByFeedId(id, opts?.max ?? 20)
   return json.items || []
 }
 ```
@@ -226,25 +216,27 @@ async function downloadEpisode(enclosureUrl, fileName) {
 
 ## Testing & verification
 
-- Add developer-only API endpoints or stub data for UI tests.
-- Run the proxy locally with environment variables to validate signing and API responses.
-- Use curl to hit the proxy and verify headers:
+- Add developer-only stub data for UI tests if network coupling becomes a problem.
+- Run the Expo app with the required Podcast Index env vars to validate signing and API responses.
+- Validate direct requests from app code or with a small Node/Expo script that reproduces the same signed headers:
 
-```bash
-curl -v 'http://localhost:3000/api/proxy/podcasts/byfeedid?id=75075'
+```ts
+const podcastIndex = createPodcastIndexService()
+const feed = await podcastIndex.getPodcastByFeedId(75075)
+console.log(feed.feeds[0]?.title)
 ```
 
 - Test background playback on both iOS and Android devices (emulators often behave differently for background playback).
 
 ## Implementation checklist (concrete todos)
 
-1. Create a small proxy (serverless or Node) that holds API key/secret and exposes `/proxy/podcasts/byfeedid` and `/proxy/episodes/byfeedid` endpoints (env vars: PODINDEX_KEY, PODINDEX_SECRET). [security-critical]
-2. Implement client fetchers in `src/services/podcastApi.ts` and types in `src/types/podcast.ts`.
+1. Keep `src/services/podcastIndex/service.ts` as the low-level signed client and reuse it instead of adding a proxy.
+2. Implement higher-level fetchers in `src/services/podcastApi.ts` and types in `src/types/podcast.ts`.
 3. Add `src/app/podcast/[feedId].tsx` screen and small presentational components in `src/components`.
 4. Add React Query provider (QueryClientProvider) to app root if not present and pick reasonable cache settings.
-5. Integrate `expo-audio` and `expo-file-system` for playback and downloads; add background playback config plugin in app.json.
+5. Integrate `expo-audio` and `expo-file-system` for playback and downloads; add background playback config plugin in `app.json`.
 6. Add downloads metadata storage (AsyncStorage or SQLite) and UI for managing downloads.
-7. Add error and rate-limit handling UI. Test across devices.
+7. Add error and rate-limit handling UI. Test across devices with the direct client-side API flow.
 
 ## Recommended libraries
 
@@ -257,7 +249,7 @@ curl -v 'http://localhost:3000/api/proxy/podcasts/byfeedid?id=75075'
 
 - High confidence: API endpoints and signing method (based on official OpenAPI spec and example-code README)[^1][^7].
 - Medium confidence: Specific UX choices (grouping, caching policy), which are recommendations not strict rules.
-- Low confidence: Any project-specific integration details or CI/CD choices not present in the repo.
+- Low confidence: Any future production-hardening decisions, because this document intentionally prioritizes a learning-oriented direct-client setup over a secure deployment architecture.
 
 ## Footnotes & citations
 
