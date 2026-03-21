@@ -2,7 +2,7 @@
   "expo": {
     "name": "podcast-app",
     "slug": "podcast-app",
-    "scheme": "podcast-app",
+    "scheme": "podcastapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
