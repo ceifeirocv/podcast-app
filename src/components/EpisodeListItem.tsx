@@ -15,7 +15,7 @@ type Props = {
   onDownload?: (episode: Episode) => void;
 };
 
-export default function EpisodeListItem({ episode, onPlay, onDownload }: Props) {
+export default function EpisodeListItem({ episode, onPlay, onOpenDetails, onDownload }: Props) {
   const subtitleParts = [] as string[];
   if (episode.pubDate) subtitleParts.push(new Date(episode.pubDate).toLocaleDateString());
   if (episode.duration) subtitleParts.push(episode.duration);
